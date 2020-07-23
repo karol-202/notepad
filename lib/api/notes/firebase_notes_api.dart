@@ -6,7 +6,7 @@ import 'package:notepad/api/notes/notes_api.dart';
 import 'package:notepad/model/note.dart';
 
 class FirebaseNotesApi extends NotesApi {
-  static const API_URL = 'https://flutter-notepad-bbef9.firebaseio.coma';
+  static const API_URL = 'https://flutter-notepad-bbef9.firebaseio.com';
 
   @override
   Future<List<Note>> getNotes() async {

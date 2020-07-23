@@ -23,6 +23,8 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   var _refreshCompleter = Completer<void>();
 
   @override
@@ -39,6 +41,7 @@ class _NotesScreenState extends State<NotesScreen> {
         builder: (context, selectionState) {
           final selectedNotes = notesState.getNotesByIds(selectionState.selectedIds);
           return Scaffold(
+            key: _scaffoldKey,
             body: RefreshIndicator(
               onRefresh: () {
                 context.bloc<NotesBloc>().add(RefreshNotesEvent());
@@ -121,9 +124,10 @@ class _NotesScreenState extends State<NotesScreen> {
     _refreshCompleter = Completer();
   }
 
-  void _showFailureSnackbar(BuildContext context, NotesStateError error) => Scaffold.of(context).showSnackBar(
+  void _showFailureSnackbar(BuildContext context, NotesStateError error) => _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           content: Text(_getNotesErrorText(error)),
+          behavior: SnackBarBehavior.floating,
         ),
       );
 
