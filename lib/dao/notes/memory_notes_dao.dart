@@ -8,7 +8,7 @@ class MemoryNotesDao extends NotesDao {
   final _controller = StreamController<List<Note>>();
 
   @override
-  Stream<List<Note>> getNotes() => _controller.stream;
+  Stream<List<Note>> getNotes() => _controller.stream.asBroadcastStream();
 
   @override
   Future<void> replaceNotes(List<Note> notes) {

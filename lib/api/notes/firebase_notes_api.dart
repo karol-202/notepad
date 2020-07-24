@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:notepad/api/base_api.dart';
-import 'package:notepad/api/api_exception.dart';
 import 'package:notepad/api/notes/notes_api.dart';
 import 'package:notepad/model/note.dart';
 
@@ -15,12 +14,9 @@ class FirebaseNotesApi extends NotesApi {
   @override
   Future<List<Note>> getNotes() async {
     final notesJson = await api.get('$_API_URL/notes.json').fromJson();
-    try {
+    return tryToParse(() {
       return notesJson.entries.map((entry) => Note.fromJson(entry.key, entry.value)).toList();
-    }
-    catch(e) {
-      throw ApiDataException(e);
-    }
+    });
   }
 
   @override

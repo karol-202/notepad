@@ -38,3 +38,12 @@ extension FromJsonTransform on Future<String> {
     }
   }
 }
+
+T tryToParse<T>(T Function() parse) {
+  try {
+    return parse();
+  }
+  catch(e) {
+    throw ApiDataException(e);
+  }
+}

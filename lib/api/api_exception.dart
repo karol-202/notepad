@@ -1,8 +1,6 @@
-abstract class ApiException implements Exception { }
+abstract class ApiException implements Exception {}
 
 class ApiConnectionException implements ApiException {
-  const ApiConnectionException();
-
   @override
   String toString() => "ApiConnectionException";
 }

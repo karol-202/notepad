@@ -13,8 +13,7 @@ class AssetsConfigProvider implements ConfigProvider {
   Future<String> getApiKey() async => (await _getOrLoadConfig()).apiKey;
 
   Future<Config> _getOrLoadConfig() async {
-    if(_cachedConfig == null) _cachedConfig = await _loadConfig();
-    return _cachedConfig;
+    return _cachedConfig ??= await _loadConfig();
   }
 
   Future<Config> _loadConfig() async {
