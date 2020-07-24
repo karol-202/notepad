@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:notepad/api/auth/auth_api.dart';
+import 'package:notepad/api/auth/firebase_auth_api.dart';
+import 'package:notepad/api/base_api.dart';
+import 'package:notepad/provider/config/assets_config_provider.dart';
+import 'package:notepad/provider/config/config_provider.dart';
 import 'package:notepad/repository/notes/notes_repository.dart';
 import 'package:notepad/repository/notes/notes_repository_impl.dart';
 
@@ -24,7 +29,10 @@ void main() {
 }
 
 void setupGetIt() {
-  _getIt.registerSingleton<NotesApi>(FirebaseNotesApi());
+  _getIt.registerSingleton<ConfigProvider>(AssetsConfigProvider());
+  _getIt.registerSingleton<BaseApi>(BaseApi());
+  _getIt.registerSingleton<AuthApi>(FirebaseAuthApi(_getIt.get<BaseApi>(), _getIt.get<ConfigProvider>()));
+  _getIt.registerSingleton<NotesApi>(FirebaseNotesApi(_getIt.get<BaseApi>()));
   _getIt.registerSingleton<NotesDao>(MemoryNotesDao());
   _getIt.registerSingleton<NotesRepository>(
       NotesRepositoryImpl(_getIt.get<NotesApi>(), _getIt.get<NotesDao>()));
