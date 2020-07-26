@@ -7,12 +7,20 @@ class AuthApiEmailExistsException implements AuthApiException {
   String toString() => 'AuthApiEmailExistsException';
 }
 
-class AuthApiCannotLoginException implements AuthApiException {
+class AuthApiCannotAuthException implements AuthApiException {
+  final String message;
+
+  const AuthApiCannotAuthException(this.message);
+
   @override
-  String toString() => 'AuthApiCannotLoginException';
+  String toString() => 'AuthApiCannotAuthException: ${this.message}';
 }
 
 class AuthApiOtherException implements AuthApiException {
+  final String message;
+
+  const AuthApiOtherException(this.message);
+
   @override
-  String toString() => 'AuthApiOtherException';
+  String toString() => 'AuthApiOtherException: ${this.message}';
 }

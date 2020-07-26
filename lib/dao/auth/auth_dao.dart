@@ -1,9 +1,9 @@
-import 'package:notepad/model/auth_state.dart';
+import 'package:notepad/model/auth_data.dart';
 
 abstract class AuthDao {
-  Stream<AuthState> getAuthState();
+  Stream<AuthData> getAuthState();
 
-  Future<void> setAuthState(AuthState state);
+  Future<void> setAuthState(AuthData state);
 
   void dispose() {}
 }

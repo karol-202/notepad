@@ -63,7 +63,7 @@ class NoteEditBloc extends Bloc<NoteEditEvent, NoteEditState> {
   Stream<NoteEditState> _mapCatching(Stream<NoteEditState> Function() operation) async* {
     final previousState = state;
     try {
-      yield* operation();
+      await for (var value in operation()) yield value;
     } on ApiConnectionException {
       yield previousState.copy(error: NoteEditStateError.network);
     } on Exception {

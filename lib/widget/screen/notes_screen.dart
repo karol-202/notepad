@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notepad/bloc/auth/auth_bloc.dart';
+import 'package:notepad/bloc/auth/auth_event.dart';
 import 'package:notepad/bloc/notes/notes_bloc.dart';
 import 'package:notepad/bloc/notes/notes_event.dart';
 import 'package:notepad/bloc/notes/notes_state.dart';
@@ -10,9 +12,11 @@ import 'package:notepad/bloc/notes_selection/notes_selection_event.dart';
 import 'package:notepad/bloc/notes_selection/notes_selection_state.dart';
 import 'package:notepad/model/note.dart';
 import 'package:notepad/util/diamond_notched_shape.dart';
+import 'package:notepad/widget/auth_listener.dart';
 import 'package:notepad/widget/bottom_bar_action.dart';
 import 'package:notepad/widget/dialog/note_delete_dialog.dart';
 import 'package:notepad/widget/item/note_item.dart';
+import 'package:notepad/widget/screen/auth_screen.dart';
 import 'package:notepad/widget/screen/note_edit_screen_route.dart';
 
 class NotesScreen extends StatefulWidget {
@@ -35,81 +39,99 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<NotesBloc, NotesState>(
-      listener: (context, notesState) => _onNotesStateChange(context, notesState),
-      builder: (context, notesState) => BlocBuilder<NotesSelectionBloc, NotesSelectionState>(
-        builder: (context, selectionState) {
-          final selectedNotes = notesState.getNotesByIds(selectionState.selectedIds);
-          return Scaffold(
-            key: _scaffoldKey,
-            body: RefreshIndicator(
-              onRefresh: () {
-                context.bloc<NotesBloc>().add(RefreshNotesEvent());
-                return _refreshCompleter.future;
-              },
-              child: ListView.builder(
-                itemCount: notesState.notesCount,
-                itemBuilder: (_, index) {
-                  final note = notesState.notes[index];
-                  return NoteWidget(
-                    note: note,
-                    selected: selectionState.isSelected(note.id),
-                    selectionMode: selectionState.isSelectionMode,
-                    onEdit: () => _editExistingNote(note),
-                    onSelectionToggle: () =>
-                        context.bloc<NotesSelectionBloc>().add(ToggleNotesSelectionEvent(note.id)),
-                    onDelete: () => _showNoteDeleteDialog(context, note),
-                  );
-                },
-              ),
-            ),
-            drawer: Drawer(
-              child: Text("ABC"),
-            ),
-            bottomNavigationBar: BottomAppBar(
-              shape: DiamondNotchedShape(),
-              notchMargin: 8,
-              child: Row(
-                children: selectionState.isSelectionMode
-                    ? [
-                        BottomBarAction(
-                          icon: Icons.clear,
-                          onPressed: () => context.bloc<NotesSelectionBloc>().add(ClearNotesSelectionEvent()),
-                        ),
-                        Spacer(),
-                        BottomBarAction(
-                          icon: Icons.delete,
-                          onPressed: () => _showSelectedNotesDeleteDialog(context, selectedNotes),
-                        ),
-                      ]
-                    : [
-                        Builder(
-                          builder: (ctx) => BottomBarAction(
-                            icon: Icons.menu,
-                            onPressed: () => Scaffold.of(ctx).openDrawer(),
-                          ),
-                        ),
-                        Spacer(),
-                        BottomBarAction(
-                          icon: Icons.delete_sweep,
-                          onPressed: notesState.notes.isNotEmpty
-                              ? () => _showAllNotesDeleteDialog(context, notesState.notes)
-                              : null,
-                        ),
-                      ],
-              ),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-            floatingActionButton: FloatingActionButton(
-              onPressed: () => _editNewNote(),
-              elevation: 0,
-              shape: BeveledRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(100)),
-              ),
-              child: Icon(Icons.add),
-            ),
-          );
-        },
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: AuthListener(
+        onLogout: _onLogout,
+        child: BlocConsumer<NotesBloc, NotesState>(
+          listener: (context, notesState) => _onNotesStateChange(context, notesState),
+          builder: (context, notesState) => BlocBuilder<NotesSelectionBloc, NotesSelectionState>(
+            builder: (context, selectionState) {
+              final selectedNotes = notesState.getNotesByIds(selectionState.selectedIds);
+              return Scaffold(
+                key: _scaffoldKey,
+                body: RefreshIndicator(
+                  onRefresh: () {
+                    context.bloc<NotesBloc>().add(RefreshNotesEvent());
+                    return _refreshCompleter.future;
+                  },
+                  child: ListView.builder(
+                    itemCount: notesState.notesCount,
+                    itemBuilder: (_, index) {
+                      final note = notesState.notes[index];
+                      return NoteWidget(
+                        note: note,
+                        selected: selectionState.isSelected(note.id),
+                        selectionMode: selectionState.isSelectionMode,
+                        onEdit: () => _editExistingNote(note),
+                        onSelectionToggle: () =>
+                            context.bloc<NotesSelectionBloc>().add(ToggleNotesSelectionEvent(note.id)),
+                        onDelete: () => _showNoteDeleteDialog(context, note),
+                      );
+                    },
+                  ),
+                ),
+                drawer: Drawer(
+                  child: ListView(
+                    children: [
+                      UserAccountsDrawerHeader(
+                        accountEmail: Text("Email"),
+                        accountName: Text("Name"),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.exit_to_app),
+                        title: Text("Wyloguj"),
+                        onTap: _logout,
+                      )
+                    ],
+                  )
+                ),
+                bottomNavigationBar: BottomAppBar(
+                  shape: DiamondNotchedShape(),
+                  notchMargin: 8,
+                  child: Row(
+                    children: selectionState.isSelectionMode
+                        ? [
+                            BottomBarAction(
+                              icon: Icons.clear,
+                              onPressed: () => context.bloc<NotesSelectionBloc>().add(ClearNotesSelectionEvent()),
+                            ),
+                            Spacer(),
+                            BottomBarAction(
+                              icon: Icons.delete,
+                              onPressed: () => _showSelectedNotesDeleteDialog(context, selectedNotes),
+                            ),
+                          ]
+                        : [
+                            Builder(
+                              builder: (ctx) => BottomBarAction(
+                                icon: Icons.menu,
+                                onPressed: () => Scaffold.of(ctx).openDrawer(),
+                              ),
+                            ),
+                            Spacer(),
+                            BottomBarAction(
+                              icon: Icons.delete_sweep,
+                              onPressed: notesState.notes.isNotEmpty
+                                  ? () => _showAllNotesDeleteDialog(context, notesState.notes)
+                                  : null,
+                            ),
+                          ],
+                  ),
+                ),
+                floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+                floatingActionButton: FloatingActionButton(
+                  onPressed: () => _editNewNote(),
+                  elevation: 0,
+                  shape: BeveledRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(100)),
+                  ),
+                  child: Icon(Icons.add),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -173,4 +195,8 @@ class _NotesScreenState extends State<NotesScreen> {
 
   void _editExistingNote(Note note) =>
       Navigator.of(context).pushNamed(NoteEditScreenRoute.ROUTE, arguments: NoteEditScreenArgs(note));
+
+  void _logout() => context.bloc<AuthBloc>().add(LogoutAuthEvent());
+
+  void _onLogout() => Navigator.of(context).popUntil(ModalRoute.withName(AuthScreen.ROUTE));
 }

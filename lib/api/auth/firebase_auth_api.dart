@@ -15,6 +15,7 @@ class FirebaseAuthApi extends AuthApi {
 
   static const _ERROR_EMAIL_EXISTS = 'EMAIL_EXISTS';
   static const _ERROR_EMAIL_NOT_FOUND = 'EMAIL_NOT_FOUND';
+  static const _ERROR_INVALID_EMAIL = 'INVALID_EMAIL';
   static const _ERROR_INVALID_PASSWORD = 'INVALID_PASSWORD';
 
   final BaseApi api;
@@ -47,8 +48,9 @@ class FirebaseAuthApi extends AuthApi {
     switch(error.message) {
       case _ERROR_EMAIL_EXISTS: throw AuthApiEmailExistsException();
       case _ERROR_EMAIL_NOT_FOUND:
-      case _ERROR_INVALID_PASSWORD: throw AuthApiCannotLoginException();
-      default: throw AuthApiOtherException();
+      case _ERROR_INVALID_EMAIL:
+      case _ERROR_INVALID_PASSWORD: throw AuthApiCannotAuthException(error.message);
+      default: throw AuthApiOtherException(error.message);
     }
   }
 

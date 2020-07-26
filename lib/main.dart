@@ -3,8 +3,13 @@ import 'package:get_it/get_it.dart';
 import 'package:notepad/api/auth/auth_api.dart';
 import 'package:notepad/api/auth/firebase_auth_api.dart';
 import 'package:notepad/api/base_api.dart';
+import 'package:notepad/bloc/auth/auth_bloc.dart';
+import 'package:notepad/dao/auth/auth_dao.dart';
+import 'package:notepad/dao/auth/auth_dao_impl.dart';
 import 'package:notepad/provider/config/assets_config_provider.dart';
 import 'package:notepad/provider/config/config_provider.dart';
+import 'package:notepad/repository/auth/auth_repository.dart';
+import 'package:notepad/repository/auth/auth_repository_impl.dart';
 import 'package:notepad/repository/notes/notes_repository.dart';
 import 'package:notepad/repository/notes/notes_repository_impl.dart';
 
@@ -22,6 +27,7 @@ GetIt _getIt = GetIt.instance;
 void main() {
   setupGetIt();
   runApp(Application(
+    authBloc: _getIt.get<AuthBloc>(),
     notesBloc: _getIt.get<NotesBloc>(),
     notesSelectionBloc: _getIt.get<NotesSelectionBloc>(),
     noteEditBlocFactory: _getIt.get<NoteEditBlocFactory>(),
@@ -33,9 +39,12 @@ void setupGetIt() {
   _getIt.registerSingleton<BaseApi>(BaseApi());
   _getIt.registerSingleton<AuthApi>(FirebaseAuthApi(_getIt.get<BaseApi>(), _getIt.get<ConfigProvider>()));
   _getIt.registerSingleton<NotesApi>(FirebaseNotesApi(_getIt.get<BaseApi>()));
+  _getIt.registerSingleton<AuthDao>(SharedPrefsAuthDao());
   _getIt.registerSingleton<NotesDao>(MemoryNotesDao());
+  _getIt.registerSingleton<AuthRepository>(AuthRepositoryImpl(_getIt.get<AuthApi>(), _getIt.get<AuthDao>()));
   _getIt.registerSingleton<NotesRepository>(
       NotesRepositoryImpl(_getIt.get<NotesApi>(), _getIt.get<NotesDao>()));
+  _getIt.registerSingleton<AuthBloc>(AuthBloc(_getIt.get<AuthRepository>()));
   _getIt.registerSingleton<NotesBloc>(NotesBloc(_getIt.get<NotesRepository>()));
   _getIt.registerSingleton<NotesSelectionBloc>(NotesSelectionBloc(_getIt.get<NotesBloc>()));
   _getIt.registerSingleton<NoteEditBlocFactory>(NoteEditBlocFactory(_getIt.get<NotesRepository>()));

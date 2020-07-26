@@ -16,6 +16,7 @@ class NoteEditScreen extends StatefulWidget {
 }
 
 class _NoteEditScreenState extends State<NoteEditScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
 
@@ -34,6 +35,7 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     return BlocConsumer<NoteEditBloc, NoteEditState>(
       listener: (context, editState) => _onEditStateChange(context, editState),
       builder: (context, editState) => Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: TextField(
             controller: _titleController,
@@ -147,7 +149,7 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   }
 
   void _showFailureSnackbar(BuildContext context, NoteEditStateError error) =>
-      Scaffold.of(context).showSnackBar(
+      _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           content: Text(_getNotesErrorText(error)),
         ),
