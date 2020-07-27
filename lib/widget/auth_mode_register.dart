@@ -1,4 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:notepad/widget/auth_flat_button.dart';
+import 'package:notepad/widget/auth_header_text.dart';
+import 'package:notepad/widget/auth_mode_base.dart';
+import 'package:notepad/widget/auth_raised_button.dart';
+import 'package:notepad/widget/auth_password_icon_button.dart';
+import 'package:notepad/widget/auth_text_form_field.dart';
 
 class _RegisterData {
   String email;
@@ -24,37 +31,83 @@ class AuthModeRegister extends StatefulWidget {
 
 class _AuthModeRegisterState extends State<AuthModeRegister> {
   final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
   final _registerData = _RegisterData();
+
+  bool _showPassword = false;
+  bool _policyAccepted = false;
 
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       onChanged: _onChange,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          TextFormField(
-            validator: _validateEmail,
-            onSaved: (value) => _registerData.email = value,
-          ),
-          TextFormField(
-            obscureText: true,
-            validator: _validatePassword,
-            onSaved: (value) => _registerData.password = value,
-          ),
-          RaisedButton(
-            child: Text("Zarejestruj"),
-            onPressed: widget.canSubmit ? _submit : null,
-          ),
-          RaisedButton(
-            child: Text("Mam już konto"),
-            onPressed: widget.onModeSwitch,
-          ),
-        ],
+      child: AuthModeBase(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AuthHeaderText("Rejestracja"),
+            SizedBox(height: 20),
+            AuthTextFormField(
+              validator: _validateEmail,
+              onSaved: (value) => _registerData.email = value,
+              hintText: "Email",
+              keyboardType: TextInputType.emailAddress,
+            ),
+            SizedBox(height: 24),
+            AuthTextFormField(
+              controller: _passwordController,
+              validator: _validatePassword,
+              onSaved: (value) => _registerData.password = value,
+              hintText: 'Hasło',
+              obscureText: !_showPassword,
+              suffixIcon: AuthPasswordIconButton(
+                showPassword: _showPassword,
+                onToggle: _togglePasswordVisibility,
+              ),
+            ),
+            SizedBox(height: 24),
+            AuthTextFormField(
+              validator: _validateConfirmedPassword,
+              hintText: 'Powtórz hasło',
+              obscureText: !_showPassword,
+              suffixIcon: AuthPasswordIconButton(
+                showPassword: _showPassword,
+                onToggle: _togglePasswordVisibility,
+              ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Checkbox(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  value: _policyAccepted,
+                  onChanged: _setPolicyAccepted,
+                ),
+                Text("Akceptuję regulamin"),
+              ],
+            ),
+            SizedBox(height: 12),
+            AuthRaisedButton(
+              text: "ZAREJESTRUJ",
+              onPressed: widget.canSubmit ? _submit : null,
+            ),
+            SizedBox(height: 8),
+            AuthFlatButton(
+              text: "MAM JUŻ KONTO",
+              onPressed: widget.onModeSwitch,
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  void _togglePasswordVisibility() =>
+      setState(() => _showPassword = !_showPassword);
+
+  void _setPolicyAccepted(bool accepted) =>
+      setState(() => _policyAccepted = accepted);
 
   String _validateEmail(String value) {
     if (!value.contains('@')) return 'Email nieprawidłowy';
@@ -63,6 +116,11 @@ class _AuthModeRegisterState extends State<AuthModeRegister> {
 
   String _validatePassword(String value) {
     if (value.length < 6) return 'Hasło za krótkie';
+    return null;
+  }
+
+  String _validateConfirmedPassword(String value) {
+    if (value != _passwordController.text) return 'Hasło nie zgadza się';
     return null;
   }
 

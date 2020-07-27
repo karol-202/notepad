@@ -36,6 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Stream<AuthState> _mapSwitchModeToState() async* {
     yield state.copy(
       mode: state.mode == AuthStateMode.register ? AuthStateMode.login : AuthStateMode.register,
+      canSubmit: false,
     );
   }
 
