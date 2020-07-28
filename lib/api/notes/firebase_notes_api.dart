@@ -1,43 +1,43 @@
-import 'dart:convert';
-
-import 'package:notepad/api/base_api.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:notepad/api/api_exception.dart';
 import 'package:notepad/api/notes/notes_api.dart';
 import 'package:notepad/model/note.dart';
 
 class FirebaseNotesApi extends NotesApi {
-  static const _API_URL = 'https://flutter-notepad-bbef9.firebaseio.com';
+  static const _TIMEOUT = Duration(seconds: 3);
 
-  final BaseApi api;
+  final notesRef = FirebaseDatabase.instance.reference().child('notes');
 
-  FirebaseNotesApi(this.api);
-
-  @override
-  Future<List<Note>> getNotes() async {
-    final notesJson = await api.get('$_API_URL/notes.json').fromJson();
-    return tryToParse(() {
-      return notesJson.entries.map((entry) => Note.fromJson(entry.key, entry.value)).toList();
-    });
-  }
+  FirebaseNotesApi();
 
   @override
-  Future<Note> addNote(Note note) async {
-    final responseData = await api.post('$_API_URL/notes.json', json.encode(note.toJson())).fromJson();
-    final noteId = responseData['name'] as String;
-    return note.copy(id: noteId);
-  }
+  Future<List<Note>> getNotes() => catchApiExceptions(() async {
+        final notesSnapshot = await notesRef.once().timeout(_TIMEOUT);
+        final notesJson = (notesSnapshot.value as Map)
+            .cast<String, Map>()
+            .map((key, value) => MapEntry(key, value.cast<String, dynamic>()));
+        return notesJson.entries.map((entry) => Note.fromJson(entry.key, entry.value)).toList();
+      });
 
   @override
-  Future<void> updateNote(Note note) async {
-    await api.put('$_API_URL/notes/${note.id}.json', json.encode(note.toJson()));
-  }
+  Future<Note> addNote(Note note) => catchApiExceptions(() async {
+        final noteRef = notesRef.push();
+        await noteRef.set(note.toJson()).timeout(_TIMEOUT);
+        return note.copy(id: noteRef.key);
+      });
 
   @override
-  Future<void> deleteNote(String id) async {
-    await api.delete('$_API_URL/notes/$id.json');
-  }
+  Future<void> updateNote(Note note) => catchApiExceptions(() async {
+        await notesRef.child(note.id).set(note.toJson()).timeout(_TIMEOUT);
+      });
 
   @override
-  Future<void> deleteAll() async {
-    await api.delete('$_API_URL/notes.json');
-  }
+  Future<void> deleteNote(String id) => catchApiExceptions(() async {
+        await notesRef.child(id).remove().timeout(_TIMEOUT);
+      });
+
+  @override
+  Future<void> deleteAll() => catchApiExceptions(() async {
+        await notesRef.remove().timeout(_TIMEOUT);
+      });
 }

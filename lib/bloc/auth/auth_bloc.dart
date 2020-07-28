@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notepad/api/api_exception.dart';
-import 'package:notepad/api/auth/auth_exception.dart';
+import 'package:notepad/repository/auth/auth_exception.dart';
 import 'package:notepad/bloc/auth/auth_event.dart';
 import 'package:notepad/bloc/auth/auth_state.dart';
 import 'package:notepad/repository/auth/auth_repository.dart';
@@ -14,6 +14,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc(this.authRepository) : super(AuthState()) {
     _listenForAuthData();
+  }
+
+  @override
+  void onTransition(Transition<AuthEvent, AuthState> transition) {
+    super.onTransition(transition);
+    print(transition.nextState);
   }
 
   void _listenForAuthData() => _authDataSubscription = authRepository.getAuthState().listen((authData) {
@@ -29,7 +35,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     else if (event is FormUpdatedAuthEvent)
       yield* _mapFormUpdatedToState(event);
     else if (event is SubmitAuthEvent)
-      yield* _mapRegisterToState(event);
+      yield* _mapSubmitToState(event);
     else if (event is LogoutAuthEvent) yield* _mapLogoutToState();
   }
 
@@ -52,7 +58,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Stream<AuthState> _mapRegisterToState(SubmitAuthEvent event) async* {
+  Stream<AuthState> _mapSubmitToState(SubmitAuthEvent event) async* {
     yield* _mapCatching(() async* {
       yield state.copy(status: AuthStateStatus.logging);
       await state.mode.fold(

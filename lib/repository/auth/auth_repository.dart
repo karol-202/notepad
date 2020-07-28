@@ -1,7 +1,7 @@
-import 'package:notepad/model/auth_data.dart';
+import 'package:notepad/model/user.dart';
 
 abstract class AuthRepository {
-  Stream<AuthData> getAuthState();
+  Stream<User> getAuthState();
 
   Future<void> register(String email, String password);
 

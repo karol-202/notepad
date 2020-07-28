@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:notepad/model/auth_data.dart';
+import 'package:notepad/model/user.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -13,7 +13,7 @@ class SwitchModeAuthEvent extends AuthEvent {
 }
 
 class AuthDataUpdatedAuthEvent extends AuthEvent {
-  final AuthData authData;
+  final User authData;
 
   const AuthDataUpdatedAuthEvent(this.authData);
 

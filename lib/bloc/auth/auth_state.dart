@@ -48,4 +48,7 @@ class AuthState extends Equatable {
 
   @override
   List<Object> get props => [mode, status, error, canSubmit];
+
+  @override
+  String toString() => "$mode $status $error $canSubmit";
 }

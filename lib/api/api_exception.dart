@@ -1,3 +1,5 @@
+import 'dart:async';
+
 abstract class ApiException implements Exception {}
 
 class ApiConnectionException implements ApiException {
@@ -5,11 +7,23 @@ class ApiConnectionException implements ApiException {
   String toString() => "ApiConnectionException";
 }
 
-class ApiDataException implements ApiException {
+class ApiOtherException implements ApiException {
   final cause;
 
-  const ApiDataException(this.cause);
+  const ApiOtherException(this.cause);
 
   @override
-  String toString() => "ApiDataException: $cause";
+  String toString() => "ApiOtherException: $cause";
+}
+
+Future<T> catchApiExceptions<T>(Future<T> Function() function) async {
+  try {
+    return await function();
+  }
+  on TimeoutException {
+    throw ApiConnectionException();
+  }
+  catch(e) {
+    throw ApiOtherException(e);
+  }
 }

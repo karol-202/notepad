@@ -48,7 +48,7 @@ class _AuthModeLoginState extends State<AuthModeLogin> {
             SizedBox(height: 24),
             AuthTextFormField(
               onSaved: (value) => _registerData.password = value,
-              obscureText: _showPassword,
+              obscureText: !_showPassword,
               hintText: 'Hasło',
               suffixIcon: AuthPasswordIconButton(
                 showPassword: _showPassword,
