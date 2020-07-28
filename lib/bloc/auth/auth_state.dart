@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:notepad/model/user.dart';
 
 enum AuthStateMode { register, login }
 
@@ -21,12 +22,14 @@ extension AuthStateModeFold on AuthStateMode {
 }
 
 class AuthState extends Equatable {
+  final User user;
   final AuthStateMode mode;
   final AuthStateStatus status;
   final AuthStateError error;
   final bool canSubmit;
 
   const AuthState({
+    this.user,
     this.mode = AuthStateMode.register,
     this.status = AuthStateStatus.not_logged,
     this.error,
@@ -34,12 +37,14 @@ class AuthState extends Equatable {
   });
 
   AuthState copy({
+    User user,
     AuthStateMode mode,
     AuthStateStatus status,
     AuthStateError error,
     bool canSubmit
   }) =>
       AuthState(
+        user: user ?? this.user,
         mode: mode ?? this.mode,
         status: status ?? this.status,
         error: error ?? this.error,
@@ -47,8 +52,5 @@ class AuthState extends Equatable {
       );
 
   @override
-  List<Object> get props => [mode, status, error, canSubmit];
-
-  @override
-  String toString() => "$mode $status $error $canSubmit";
+  List<Object> get props => [user, mode, status, error, canSubmit];
 }

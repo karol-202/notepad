@@ -16,12 +16,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     _listenForAuthData();
   }
 
-  @override
-  void onTransition(Transition<AuthEvent, AuthState> transition) {
-    super.onTransition(transition);
-    print(transition.nextState);
-  }
-
   void _listenForAuthData() => _authDataSubscription = authRepository.getAuthState().listen((authData) {
         add(AuthDataUpdatedAuthEvent(authData));
       });
@@ -48,6 +42,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Stream<AuthState> _mapDataUpdatedToState(AuthDataUpdatedAuthEvent event) async* {
     yield state.copy(
+      user: event.authData,
       status: event.authData != null ? AuthStateStatus.logged : AuthStateStatus.not_logged,
     );
   }

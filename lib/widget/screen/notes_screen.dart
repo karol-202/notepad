@@ -43,7 +43,7 @@ class _NotesScreenState extends State<NotesScreen> {
       onWillPop: () async => false,
       child: AuthListener(
         onLogout: _onLogout,
-        child: BlocConsumer<NotesBloc, NotesState>(
+        builder: (user) => BlocConsumer<NotesBloc, NotesState>(
           listener: (context, notesState) => _onNotesStateChange(context, notesState),
           builder: (context, notesState) => BlocBuilder<NotesSelectionBloc, NotesSelectionState>(
             builder: (context, selectionState) {
@@ -75,8 +75,9 @@ class _NotesScreenState extends State<NotesScreen> {
                   child: ListView(
                     children: [
                       UserAccountsDrawerHeader(
-                        accountEmail: Text("Email"),
-                        accountName: Text("Name"),
+                        accountEmail: Text(user.email ?? ''),
+                        accountName: Text(user.displayName ?? ''),
+                        currentAccountPicture: user.photoUrl != null ? Image.network(user.photoUrl) : null,
                       ),
                       ListTile(
                         leading: Icon(Icons.exit_to_app),

@@ -28,5 +28,9 @@ class FirebaseAuthRepository extends AuthRepository {
 }
 
 extension on FirebaseUser {
-  User toUser() => User();
+  User toUser() => User(
+        email: email,
+        displayName: displayName,
+        photoUrl: photoUrl,
+      );
 }
