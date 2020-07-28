@@ -68,7 +68,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       await for (var value in operation()) yield value;
     } on ApiConnectionException {
       yield FailureNotesState(state.notes, NotesStateError.network);
-    } on Exception {
+    } on Exception catch(e) {
       yield FailureNotesState(state.notes, NotesStateError.other);
     }
   }

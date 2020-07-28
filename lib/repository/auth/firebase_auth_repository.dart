@@ -27,14 +27,14 @@ class FirebaseAuthRepository extends AuthRepository {
 
   @override
   Future<void> loginWithGoogle() => catchAuthExceptions(() async {
-    final googleAccount = await _googleSingIn.signIn();
-    final googleAuth = await googleAccount.authentication;
-    final credentials = GoogleAuthProvider.getCredential(
-      idToken: googleAuth.idToken,
-      accessToken: googleAuth.accessToken,
-    );
-    await _auth.signInWithCredential(credentials);
-  });
+        final googleAccount = await _googleSingIn.signIn();
+        final googleAuth = await googleAccount.authentication;
+        final credentials = GoogleAuthProvider.getCredential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
+        );
+        await _auth.signInWithCredential(credentials);
+      });
 
   @override
   Future<void> logout() async => await _auth.signOut();
@@ -42,6 +42,7 @@ class FirebaseAuthRepository extends AuthRepository {
 
 extension on FirebaseUser {
   User toUser() => User(
+        id: uid,
         email: email,
         displayName: displayName,
         photoUrl: photoUrl,

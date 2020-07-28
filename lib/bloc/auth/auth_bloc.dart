@@ -82,7 +82,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await for (var value in operation()) yield value;
     } on ApiConnectionException {
       yield* _mapErrorToState(previousState, AuthStateError.network);
-    } on AuthApiCannotAuthException catch(e) {
+    } on AuthApiCannotAuthException {
       final error = previousState.mode == AuthStateMode.register
           ? AuthStateError.data_invalid
           : AuthStateError.cannot_login;

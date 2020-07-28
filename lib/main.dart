@@ -29,9 +29,9 @@ void main() {
 }
 
 void setupGetIt() {
-  _getIt.registerSingleton<NotesApi>(FirebaseNotesApi());
-  _getIt.registerSingleton<NotesDao>(MemoryNotesDao());
   _getIt.registerSingleton<AuthRepository>(FirebaseAuthRepository());
+  _getIt.registerSingleton<NotesApi>(FirebaseNotesApi(_getIt.get<AuthRepository>()));
+  _getIt.registerSingleton<NotesDao>(MemoryNotesDao());
   _getIt.registerSingleton<NotesRepository>(
       NotesRepositoryImpl(_getIt.get<NotesApi>(), _getIt.get<NotesDao>()));
   _getIt.registerSingleton<AuthBloc>(AuthBloc(_getIt.get<AuthRepository>()));
