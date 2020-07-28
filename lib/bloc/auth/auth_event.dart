@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:notepad/model/user.dart';
 
+enum ThirdPartyLoginProvider { google }
+
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
 }
@@ -38,6 +40,15 @@ class SubmitAuthEvent extends AuthEvent {
 
   @override
   List<Object> get props => [email, password];
+}
+
+class ThirdPartyLoginAuthEvent extends AuthEvent {
+  final ThirdPartyLoginProvider provider;
+
+  const ThirdPartyLoginAuthEvent(this.provider);
+
+  @override
+  List<Object> get props => [provider];
 }
 
 class LogoutAuthEvent extends AuthEvent {

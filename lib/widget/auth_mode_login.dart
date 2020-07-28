@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:notepad/bloc/auth/auth_event.dart';
 import 'package:notepad/widget/auth_flat_button.dart';
+import 'package:notepad/widget/auth_flat_icon_button.dart';
 import 'package:notepad/widget/auth_header_text.dart';
 import 'package:notepad/widget/auth_mode_base.dart';
 import 'package:notepad/widget/auth_password_icon_button.dart';
@@ -13,10 +15,12 @@ class _LoginData {
 
 class AuthModeLogin extends StatefulWidget {
   final void Function(String, String) onSubmit;
+  final void Function(ThirdPartyLoginProvider) onThirdPartyLogin;
   final void Function() onModeSwitch;
 
   AuthModeLogin({
     @required this.onSubmit,
+    @required this.onThirdPartyLogin,
     @required this.onModeSwitch,
   });
 
@@ -61,6 +65,12 @@ class _AuthModeLoginState extends State<AuthModeLogin> {
               onPressed: _submit,
             ),
             SizedBox(height: 8),
+            AuthFlatIconButton(
+              iconAsset: 'assets/images/google.png',
+              text: "ZALOGUJ Z GOOGLE",
+              onPressed: () => _loginWithThirdParty(ThirdPartyLoginProvider.google),
+            ),
+            SizedBox(height: 8),
             AuthFlatButton(
               text: "CHCĘ ZAŁOŻYĆ KONTO",
               onPressed: widget.onModeSwitch,
@@ -78,4 +88,6 @@ class _AuthModeLoginState extends State<AuthModeLogin> {
     _formKey.currentState.save();
     widget.onSubmit(_registerData.email, _registerData.password);
   }
+
+  void _loginWithThirdParty(ThirdPartyLoginProvider provider) => widget.onThirdPartyLogin(provider);
 }

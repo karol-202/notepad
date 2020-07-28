@@ -32,6 +32,7 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           ifLogin: () => AuthModeLogin(
             onSubmit: _submit,
+            onThirdPartyLogin: _loginWithThirdParty,
             onModeSwitch: _onModeSwitch,
           ),
         ),
@@ -43,6 +44,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _submit(String email, String password) =>
       context.bloc<AuthBloc>().add(SubmitAuthEvent(email, password));
+
+  void _loginWithThirdParty(ThirdPartyLoginProvider provider) =>
+      context.bloc<AuthBloc>().add(ThirdPartyLoginAuthEvent(provider));
 
   void _onModeSwitch() => context.bloc<AuthBloc>().add(SwitchModeAuthEvent());
 

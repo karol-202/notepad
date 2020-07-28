@@ -11,12 +11,14 @@ class AuthFlatButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
     return FlatButton(
       child: Text(text),
       onPressed: onPressed,
-      textColor: Theme.of(context).primaryColor,
+      textColor: primaryColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(100)),
+        side: BorderSide(color: primaryColor, width: 1),
       ),
     );
   }

@@ -72,21 +72,24 @@ class _NotesScreenState extends State<NotesScreen> {
                   ),
                 ),
                 drawer: Drawer(
-                  child: ListView(
-                    children: [
-                      UserAccountsDrawerHeader(
-                        accountEmail: Text(user.email ?? ''),
-                        accountName: Text(user.displayName ?? ''),
-                        currentAccountPicture: user.photoUrl != null ? Image.network(user.photoUrl) : null,
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.exit_to_app),
-                        title: Text("Wyloguj"),
-                        onTap: _logout,
-                      )
-                    ],
-                  )
-                ),
+                    child: ListView(
+                  children: [
+                    UserAccountsDrawerHeader(
+                      accountEmail: Text(user.email ?? ''),
+                      accountName: Text(user.displayName ?? ''),
+                      currentAccountPicture: user.photoUrl != null
+                          ? CircleAvatar(
+                              backgroundImage: NetworkImage(user.photoUrl),
+                            )
+                          : null,
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.exit_to_app),
+                      title: Text("Wyloguj"),
+                      onTap: _logout,
+                    )
+                  ],
+                )),
                 bottomNavigationBar: BottomAppBar(
                   shape: DiamondNotchedShape(),
                   notchMargin: 8,
@@ -95,7 +98,8 @@ class _NotesScreenState extends State<NotesScreen> {
                         ? [
                             BottomBarAction(
                               icon: Icons.clear,
-                              onPressed: () => context.bloc<NotesSelectionBloc>().add(ClearNotesSelectionEvent()),
+                              onPressed: () =>
+                                  context.bloc<NotesSelectionBloc>().add(ClearNotesSelectionEvent()),
                             ),
                             Spacer(),
                             BottomBarAction(
@@ -147,7 +151,8 @@ class _NotesScreenState extends State<NotesScreen> {
     _refreshCompleter = Completer();
   }
 
-  void _showFailureSnackbar(BuildContext context, NotesStateError error) => _scaffoldKey.currentState.showSnackBar(
+  void _showFailureSnackbar(BuildContext context, NotesStateError error) =>
+      _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           content: Text(_getNotesErrorText(error)),
           behavior: SnackBarBehavior.floating,

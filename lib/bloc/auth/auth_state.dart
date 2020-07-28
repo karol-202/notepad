@@ -30,7 +30,7 @@ class AuthState extends Equatable {
 
   const AuthState({
     this.user,
-    this.mode = AuthStateMode.register,
+    this.mode = AuthStateMode.login,
     this.status = AuthStateStatus.not_logged,
     this.error,
     this.canSubmit = false,

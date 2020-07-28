@@ -30,6 +30,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       yield* _mapFormUpdatedToState(event);
     else if (event is SubmitAuthEvent)
       yield* _mapSubmitToState(event);
+    else if(event is ThirdPartyLoginAuthEvent)
+      yield* _mapThirdPartyLoginToState(event);
     else if (event is LogoutAuthEvent) yield* _mapLogoutToState();
   }
 
@@ -63,13 +65,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
+  Stream<AuthState> _mapThirdPartyLoginToState(ThirdPartyLoginAuthEvent event) async* {
+    yield* _mapCatching(() async* {
+      yield state.copy(status: AuthStateStatus.logging);
+      switch(event.provider) {
+        case ThirdPartyLoginProvider.google:
+          await authRepository.loginWithGoogle();
+          break;
+      }
+    });
+  }
+
   Stream<AuthState> _mapCatching(Stream<AuthState> Function() operation) async* {
     final previousState = state;
     try {
       await for (var value in operation()) yield value;
     } on ApiConnectionException {
       yield* _mapErrorToState(previousState, AuthStateError.network);
-    } on AuthApiCannotAuthException {
+    } on AuthApiCannotAuthException catch(e) {
       final error = previousState.mode == AuthStateMode.register
           ? AuthStateError.data_invalid
           : AuthStateError.cannot_login;
