@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notepad/bloc/camera/camera_state.dart';
 import 'package:notepad/bloc/note_edit/note_edit_bloc.dart';
 import 'package:notepad/bloc/note_edit/note_edit_event.dart';
 import 'package:notepad/bloc/note_edit/note_edit_state.dart';
 import 'package:notepad/model/note.dart';
 import 'package:notepad/util/diamond_notched_shape.dart';
 import 'package:notepad/widget/bottom_bar_action.dart';
+import 'package:notepad/widget/screen/camera_screen_route.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 class NoteEditScreen extends StatefulWidget {
@@ -39,7 +41,7 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
         appBar: AppBar(
           title: TextField(
             controller: _titleController,
-            onChanged: (_) => _edit(context),
+            onChanged: (_) => _edit(),
             decoration: null,
             style: Theme.of(context).primaryTextTheme.headline6,
           ),
@@ -49,10 +51,14 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
           notchMargin: 8,
           child: Row(
             children: [
+              BottomBarAction(
+                icon: Icons.camera_alt,
+                onPressed: _takePhoto,
+              ),
               Spacer(),
               BottomBarAction(
                 icon: Icons.delete,
-                onPressed: editState.canDelete ? () => _delete(context) : null,
+                onPressed: editState.canDelete ? () => _delete() : null,
               ),
             ],
           ),
@@ -99,7 +105,7 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
                 padding: EdgeInsets.all(16),
                 child: TextField(
                   controller: _contentController,
-                  onChanged: (_) => _edit(context),
+                  onChanged: (_) => _edit(),
                   decoration: null,
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
@@ -113,30 +119,30 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   }
 
   void _onEditStateChange(BuildContext context, NoteEditState editState) {
-    if(editState.error != null) _showFailureSnackbar(context, editState.error);
+    if (editState.error != null) _showFailureSnackbar(_getNotesErrorText(editState.error));
     if (editState.editStatus != NoteEditStateEditStatus.saving &&
         editState.deleteStatus != NoteEditStateDeleteStatus.deleting) _hideProgressDialogIfVisible();
     if (editState.editStatus == NoteEditStateEditStatus.saving && _progressDialog == null)
       _showProgressDialog();
     if (editState.deleteStatus == NoteEditStateDeleteStatus.deleting && _progressDialog == null)
       _showProgressDialog();
-    if(editState.deleteStatus == NoteEditStateDeleteStatus.deleted) _exit();
+    if (editState.deleteStatus == NoteEditStateDeleteStatus.deleted) _exit();
   }
 
   void _toggleEditing(BuildContext context, NoteEditState state) {
     if (state.editStatus == NoteEditStateEditStatus.idle)
-      _edit(context);
-    else if (state.editStatus == NoteEditStateEditStatus.editing) _save(context);
+      _edit();
+    else if (state.editStatus == NoteEditStateEditStatus.editing) _save();
   }
 
-  void _edit(BuildContext context) => context.bloc<NoteEditBloc>().add(EditNoteEditEvent());
+  void _edit() => context.bloc<NoteEditBloc>().add(EditNoteEditEvent());
 
-  void _save(BuildContext context) => context.bloc<NoteEditBloc>().add(SaveNoteEditEvent(Note(
+  void _save() => context.bloc<NoteEditBloc>().add(SaveNoteEditEvent(Note(
         title: _titleController.value.text,
         content: _contentController.value.text,
       )));
 
-  void _delete(BuildContext context) => context.bloc<NoteEditBloc>().add(DeleteNoteEditEvent());
+  void _delete() => context.bloc<NoteEditBloc>().add(DeleteNoteEditEvent());
 
   void _showProgressDialog() {
     _progressDialog = ProgressDialog(context);
@@ -148,21 +154,41 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     _progressDialog = null;
   }
 
-  void _showFailureSnackbar(BuildContext context, NoteEditStateError error) =>
-      _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          content: Text(_getNotesErrorText(error)),
-        ),
-      );
+  void _showFailureSnackbar(String error) => _scaffoldKey.currentState
+    ..removeCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(error),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
 
-  // ignore: missing_return
   String _getNotesErrorText(NoteEditStateError error) {
     switch (error) {
       case NoteEditStateError.network:
         return "Błąd połączenia";
-      case NoteEditStateError.other:
+      default:
         return "Nieznany błąd";
     }
+  }
+
+  String _getCameraErrorText(CameraError error) {
+    switch (error) {
+      case CameraError.no_cameras:
+        return "Brak aparatu";
+      default:
+        return "Błąd aparatu";
+    }
+  }
+
+  void _takePhoto() => Navigator.of(context).pushNamed(CameraScreenRoute.ROUTE,
+      arguments: CameraScreenArgs(
+        onPhotoSubmit: _onPhotoTaken,
+        onError: (error) => _showFailureSnackbar(_getCameraErrorText(error)),
+      ));
+
+  void _onPhotoTaken(String path) {
+    print("photo: $path");
   }
 
   void _exit() => Navigator.of(context).pop();

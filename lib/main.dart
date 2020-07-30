@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:notepad/bloc/auth/auth_bloc.dart';
+import 'package:notepad/bloc/camera/camera_bloc.dart';
 import 'package:notepad/repository/auth/auth_repository.dart';
 import 'package:notepad/repository/auth/firebase_auth_repository.dart';
 import 'package:notepad/repository/notes/notes_repository.dart';
@@ -25,6 +26,7 @@ void main() {
     notesBloc: _getIt.get<NotesBloc>(),
     notesSelectionBloc: _getIt.get<NotesSelectionBloc>(),
     noteEditBlocFactory: _getIt.get<NoteEditBlocFactory>(),
+    cameraBloc: _getIt.get<CameraBloc>(),
   ));
 }
 
@@ -38,4 +40,5 @@ void setupGetIt() {
   _getIt.registerSingleton<NotesBloc>(NotesBloc(_getIt.get<NotesRepository>()));
   _getIt.registerSingleton<NotesSelectionBloc>(NotesSelectionBloc(_getIt.get<NotesBloc>()));
   _getIt.registerSingleton<NoteEditBlocFactory>(NoteEditBlocFactory(_getIt.get<NotesRepository>()));
+  _getIt.registerSingleton<CameraBloc>(CameraBloc());
 }

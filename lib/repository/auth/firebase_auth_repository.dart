@@ -7,7 +7,7 @@ import 'package:notepad/repository/auth/auth_exception.dart';
 import 'package:notepad/repository/auth/auth_repository.dart';
 
 class FirebaseAuthRepository extends AuthRepository {
-  static const _TIMEOUT = Duration(seconds: 3);
+  static const _TIMEOUT = Duration(seconds: 5);
 
   final _auth = FirebaseAuth.instance;
   final _googleSingIn = GoogleSignIn();

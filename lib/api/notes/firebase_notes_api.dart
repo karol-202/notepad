@@ -5,7 +5,7 @@ import 'package:notepad/model/note.dart';
 import 'package:notepad/repository/auth/auth_repository.dart';
 
 class FirebaseNotesApi extends NotesApi {
-  static const _TIMEOUT = Duration(seconds: 3);
+  static const _TIMEOUT = Duration(seconds: 5);
 
   final AuthRepository authRepository;
 

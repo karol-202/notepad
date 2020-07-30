@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notepad/bloc/auth/auth_bloc.dart';
+import 'package:notepad/bloc/camera/camera_bloc.dart';
 import 'package:notepad/bloc/note_edit/note_edit_bloc.dart';
 import 'package:notepad/bloc/notes/notes_bloc.dart';
 import 'package:notepad/bloc/notes_selection/notes_selection_bloc.dart';
 import 'package:notepad/widget/screen/auth_screen.dart';
+import 'package:notepad/widget/screen/camera_screen_route.dart';
 import 'package:notepad/widget/screen/note_edit_screen_route.dart';
+import 'package:notepad/widget/screen/photo_preview_screen_route.dart';
 
 import 'screen/notes_screen.dart';
 
@@ -14,12 +17,14 @@ class Application extends StatelessWidget {
   final NotesBloc notesBloc;
   final NotesSelectionBloc notesSelectionBloc;
   final NoteEditBlocFactory noteEditBlocFactory;
+  final CameraBloc cameraBloc;
 
   Application({
     @required this.authBloc,
     @required this.notesBloc,
     @required this.notesSelectionBloc,
     @required this.noteEditBlocFactory,
+    @required this.cameraBloc,
   });
 
   @override
@@ -41,6 +46,8 @@ class Application extends StatelessWidget {
           AuthScreen.ROUTE: (_) => AuthScreen(),
           NotesScreen.ROUTE: (_) => NotesScreen(),
           NoteEditScreenRoute.ROUTE: (_) => NoteEditScreenRoute(noteEditBlocFactory),
+          CameraScreenRoute.ROUTE: (_) => CameraScreenRoute(),
+          PhotoPreviewScreenRoute.ROUTE: (_) => PhotoPreviewScreenRoute(),
         },
         initialRoute: AuthScreen.ROUTE,
       ),
