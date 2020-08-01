@@ -45,10 +45,3 @@ class DeleteAllNotesEvent extends NotesEvent {
   @override
   List<Object> get props => [];
 }
-
-class ClearFailureNotesEvent extends NotesEvent {
-  const ClearFailureNotesEvent();
-
-  @override
-  List<Object> get props => [];
-}

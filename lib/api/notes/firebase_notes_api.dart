@@ -3,6 +3,7 @@ import 'package:notepad/api/api_exception.dart';
 import 'package:notepad/api/notes/notes_api.dart';
 import 'package:notepad/model/note.dart';
 import 'package:notepad/repository/auth/auth_repository.dart';
+import 'package:notepad/util/map.dart';
 
 class FirebaseNotesApi extends NotesApi {
   static const _TIMEOUT = Duration(seconds: 5);
@@ -17,9 +18,7 @@ class FirebaseNotesApi extends NotesApi {
   Future<List<Note>> getNotes() => catchApiExceptions(() async {
         final notesRef = await _getNotesRef();
         final notesSnapshot = await notesRef.once().timeout(_TIMEOUT);
-        final notesJson = (notesSnapshot.value as Map ?? {})
-            .cast<String, Map>()
-            .map((key, value) => MapEntry(key, value.cast<String, dynamic>()));
+        final notesJson = (notesSnapshot.value as Map ?? {}).ensureStringKeys();
         return notesJson.entries.map((entry) => Note.fromJson(entry.key, entry.value)).toList();
       });
 
@@ -28,7 +27,7 @@ class FirebaseNotesApi extends NotesApi {
         final notesRef = await _getNotesRef();
         final noteRef = notesRef.push();
         await noteRef.set(note.toJson()).timeout(_TIMEOUT);
-        return note.copy(id: noteRef.key);
+        return note.withId(noteRef.key);
       });
 
   @override
@@ -52,8 +51,5 @@ class FirebaseNotesApi extends NotesApi {
   Future<DatabaseReference> _getNotesRef() async =>
       dataRef.child('users').child(await _getUserId()).child('notes');
 
-  Future<String> _getUserId() async {
-    final user = await authRepository.getAuthState().first;
-    return user.id;
-  }
+  Future<String> _getUserId() async => (await authRepository.getAuthState().first).id;
 }

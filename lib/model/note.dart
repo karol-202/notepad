@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'note.g.dart';
 
@@ -8,25 +9,26 @@ class Note {
   final String id;
   final String title;
   final String content;
+  @JsonKey(name: 'photoUrls')
+  final Map<String, String> photoUrlsMap;
 
-  const Note({
+  List<String> get photoUrls => photoUrlsMap.values.toList();
+
+  Note({
     this.id = '',
     this.title = '',
     this.content = '',
-  });
+    Map<String, String> photoUrlsMap,
+  }) : photoUrlsMap = photoUrlsMap ?? {};
 
-  factory Note.fromJson(String id, Map<String, dynamic> json) => _$NoteFromJson(json).copy(id: id);
+  factory Note.fromJson(String id, Map<String, dynamic> json) => _$NoteFromJson(json).withId(id);
 
   Map<String, dynamic> toJson() => _$NoteToJson(this);
 
-  Note copy({
-    String id,
-    String title,
-    String content,
-  }) =>
-      Note(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        content: content ?? this.content,
-      );
+  Note withId(String id) => Note(id: id, title: title, content: content, photoUrlsMap: photoUrlsMap);
+
+  Note withNewPhoto(String url) =>
+      Note(id: id, title: title, content: content, photoUrlsMap: {...photoUrlsMap}..[Uuid().v4()] = url);
+
+  Note withNewPhotos(List<String> urls) => urls.fold(this, (note, url) => note.withNewPhoto(url));
 }

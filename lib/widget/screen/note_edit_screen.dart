@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notepad/api/photo/photo_api.dart';
 import 'package:notepad/bloc/camera/camera_state.dart';
 import 'package:notepad/bloc/note_edit/note_edit_bloc.dart';
 import 'package:notepad/bloc/note_edit/note_edit_event.dart';
+import 'package:notepad/bloc/note_edit/note_edit_photo_state.dart';
 import 'package:notepad/bloc/note_edit/note_edit_state.dart';
 import 'package:notepad/model/note.dart';
 import 'package:notepad/util/diamond_notched_shape.dart';
@@ -27,9 +31,12 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   @override
   void initState() {
     super.initState();
-    final note = context.bloc<NoteEditBloc>().state.savedNote;
-    _titleController.text = note?.title ?? '';
-    _contentController.text = note?.content ?? '';
+
+    final state = context.bloc<NoteEditBloc>().state;
+    if (state is ExistingNoteEditState) {
+      _titleController.text = state.savedNote?.title ?? '';
+      _contentController.text = state.savedNote?.content ?? '';
+    }
   }
 
   @override
@@ -112,11 +119,107 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
                 ),
               ),
             ),
+            if (editState.photos.isNotEmpty)
+              Container(
+                height: 140,
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: Colors.black87,
+                      width: 0.0,
+                    ),
+                  ),
+                ),
+                child: Material(
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: editState.photos.length,
+                    itemBuilder: (context, index) {
+                      final photoState = editState.photos[index];
+                      return AspectRatio(
+                        aspectRatio: 1,
+                        child: Container(
+                          margin: EdgeInsets.all(8),
+                          constraints: BoxConstraints(minWidth: 20),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Image(
+                                image: photoState.imageProvider,
+                                fit: BoxFit.contain,
+                              ),
+                              if (photoState is InProgressNoteEditPhotoState)
+                                _progressPhotoOverlay(photoState),
+                              if (photoState is FailedNoteEditPhotoState) _retryPhotoOverlay(photoState)
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              )
           ],
         ),
       ),
     );
   }
+
+  Widget _progressPhotoOverlay(InProgressNoteEditPhotoState state) => Container(
+        color: Colors.black38,
+        constraints: BoxConstraints.expand(),
+        child: Center(
+          child: Material(
+            type: MaterialType.circle,
+            color: Colors.white,
+            child: InkWell(
+              child: Container(
+                width: 40,
+                height: 40,
+                padding: EdgeInsets.all(4),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: state.progress,
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation(Colors.black),
+                    ),
+                    Center(
+                      child: Icon(Icons.clear),
+                    )
+                  ],
+                ),
+              ),
+              borderRadius: BorderRadius.circular(40),
+              onTap: () => _cancelPhotoUpload(state.task),
+            ),
+          ),
+        ),
+      );
+
+  Widget _retryPhotoOverlay(FailedNoteEditPhotoState state) => Container(
+        color: Colors.black38,
+        constraints: BoxConstraints.expand(),
+        child: Center(
+          child: Material(
+            type: MaterialType.circle,
+            color: Colors.red,
+            child: InkWell(
+              child: Container(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.refresh,
+                  color: Colors.white,
+                ),
+              ),
+              borderRadius: BorderRadius.circular(40),
+              onTap: () => _retryPhotoUpload(state.file),
+            ),
+          ),
+        ),
+      );
 
   void _onEditStateChange(BuildContext context, NoteEditState editState) {
     if (editState.error != null) _showFailureSnackbar(_getNotesErrorText(editState.error));
@@ -145,7 +248,14 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   void _delete() => context.bloc<NoteEditBloc>().add(DeleteNoteEditEvent());
 
   void _showProgressDialog() {
-    _progressDialog = ProgressDialog(context);
+    _progressDialog = ProgressDialog(context)
+      ..style(
+        message: 'Przetwarzanie',
+        progressWidget: Container(
+          padding: EdgeInsets.all(8),
+          child: CircularProgressIndicator(),
+        ),
+      );
     _progressDialog.show();
   }
 
@@ -187,9 +297,12 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
         onError: (error) => _showFailureSnackbar(_getCameraErrorText(error)),
       ));
 
-  void _onPhotoTaken(String path) {
-    print("photo: $path");
-  }
+  void _onPhotoTaken(String path) => context.bloc<NoteEditBloc>().add(AddPhotoNoteEditEvent(path));
+
+  void _cancelPhotoUpload(PhotoUploadTask task) =>
+      context.bloc<NoteEditBloc>().add(CancelPhotoUploadNoteEditEvent(task));
+
+  void _retryPhotoUpload(File file) => context.bloc<NoteEditBloc>().add(RetryPhotoUploadNoteEditEvent(file));
 
   void _exit() => Navigator.of(context).pop();
 }

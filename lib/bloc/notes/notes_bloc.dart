@@ -20,56 +20,52 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       });
 
   @override
-  Stream<NotesState> mapEventToState(NotesEvent event) async* {
-    if (event is NotesUpdatedNotesEvent)
-      yield* _mapUpdatedToState(event);
-    else if (event is RefreshNotesEvent)
-      yield* _mapRefreshToState();
-    else if (event is DeleteNoteNotesEvent)
-      yield* _mapDeleteNoteToState(event);
-    else if (event is DeleteNotesNotesEvent)
-      yield* _mapDeleteNotesToState(event);
-    else if (event is DeleteAllNotesEvent)
-      yield* _mapDeleteAllToState();
-    else if (event is ClearFailureNotesEvent) yield* _mapClearFailureToState();
-  }
+  Stream<NotesState> mapEventToState(NotesEvent event) => _mapCatching(() async* {
+        if (event is NotesUpdatedNotesEvent)
+          yield* _mapUpdatedToState(event);
+        else if (event is RefreshNotesEvent)
+          yield* _mapRefreshToState();
+        else if (event is DeleteNoteNotesEvent)
+          yield* _mapDeleteNoteToState(event);
+        else if (event is DeleteNotesNotesEvent)
+          yield* _mapDeleteNotesToState(event);
+        else if (event is DeleteAllNotesEvent) yield* _mapDeleteAllToState();
+      });
 
   Stream<NotesState> _mapUpdatedToState(NotesUpdatedNotesEvent event) async* {
     yield state.withNotes(event.notes);
   }
 
-  Stream<NotesState> _mapRefreshToState() => _mapRepositoryOperationToState(() async* {
-        yield LoadingNotesState(state.notes);
-        await notesRepository.refreshNotes();
-        yield SuccessNotesState(state.notes);
-      });
-
-  Stream<NotesState> _mapDeleteNoteToState(DeleteNoteNotesEvent event) =>
-      _mapRepositoryOperationToState(() async* {
-        await notesRepository.deleteNote(event.noteId);
-      });
-
-  Stream<NotesState> _mapDeleteNotesToState(DeleteNotesNotesEvent event) =>
-      _mapRepositoryOperationToState(() async* {
-        await notesRepository.deleteNotes(event.noteIds);
-      });
-
-  Stream<NotesState> _mapDeleteAllToState() => _mapRepositoryOperationToState(() async* {
-        await notesRepository.deleteAll();
-      });
-
-  Stream<NotesState> _mapClearFailureToState() async* {
-    if (state is FailureNotesState) yield SuccessNotesState(state.notes);
+  Stream<NotesState> _mapRefreshToState() async* {
+    yield LoadingNotesState(state.notes);
+    await notesRepository.refreshNotes();
+    yield SuccessNotesState(state.notes);
   }
 
-  Stream<NotesState> _mapRepositoryOperationToState(Stream<NotesState> Function() operation) async* {
+  Stream<NotesState> _mapDeleteNoteToState(DeleteNoteNotesEvent event) async* {
+    await notesRepository.deleteNote(event.noteId);
+  }
+
+  Stream<NotesState> _mapDeleteNotesToState(DeleteNotesNotesEvent event) async* {
+    await notesRepository.deleteNotes(event.noteIds);
+  }
+
+  Stream<NotesState> _mapDeleteAllToState() async* {
+    await notesRepository.deleteAll();
+  }
+
+  Stream<NotesState> _mapCatching(Stream<NotesState> Function() operation) async* {
+    final previousState = state;
     try {
       // Using await for instead of yield*, because yield* leaves exceptions unhandled due to a bug
       await for (var value in operation()) yield value;
     } on ApiConnectionException {
       yield FailureNotesState(state.notes, NotesStateError.network);
-    } on Exception catch(e) {
+      yield previousState;
+    } catch(e, s) {
+      print('$e\n$s');
       yield FailureNotesState(state.notes, NotesStateError.other);
+      yield previousState;
     }
   }
 
